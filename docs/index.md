@@ -34,3 +34,5 @@ First some parts:
 * Mail and female Dupont conntectors.
 
 You will also need a soldering iron and some solder to connect things together. A [crimping tool](https://www.amazon.co.uk/dp/B07QNPZDTW) to create the connector cables.
+
+Further instructions coming...
