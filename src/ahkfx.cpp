@@ -44,6 +44,12 @@ begin()
   setVolume(VOL_CENTER);
 
   Serial.println(F("\nSound Effects Online"));
+
+  pinMode(PIN_BLUE_FRONT, OUTPUT);
+  setBlueFrontLights(false);
+
+  pinMode(PIN_RED_BACK, OUTPUT);
+  setRedBackLights(false);
 }
 
 
@@ -51,6 +57,18 @@ void AerialHunterKillerEffects::
 handle()
 {
 
+}
+
+bool AerialHunterKillerEffects::
+isBlueFrontLights()
+{
+  return digitalRead(PIN_BLUE_FRONT);
+}
+
+bool AerialHunterKillerEffects::
+isRedBackLights()
+{
+  return digitalRead(PIN_RED_BACK);
 }
 
 bool AerialHunterKillerEffects::
@@ -100,6 +118,18 @@ play(const char *sound) {
 
   cmd += sound;
   atCommand(cmd.c_str());
+}
+
+void AerialHunterKillerEffects::
+setBlueFrontLights(bool light)
+{
+  digitalWrite(PIN_BLUE_FRONT, light);
+}
+
+void AerialHunterKillerEffects::
+setRedBackLights(bool light)
+{
+  digitalWrite(PIN_RED_BACK, light);
 }
 
 void AerialHunterKillerEffects::

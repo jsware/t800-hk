@@ -41,6 +41,27 @@ class AerialHunterKillerEffects
 
   public:
     //
+    // Accessors...
+    //
+
+    /**
+     * @brief Indicate blue front lighting effects lights on/off.
+     * 
+     * @return true when lights on.
+     * @return false when lights off.
+     */
+    bool isBlueFrontLights();
+
+    /**
+     * @brief Indicate red back lighting effects lights on/off.
+     * 
+     * @return true when lights on.
+     * @return false when lights off.
+     */
+    bool isRedBackLights();
+
+  public:
+    //
     // Mutators...
     //
 
@@ -55,7 +76,37 @@ class AerialHunterKillerEffects
      * 
      */
     void handle();
-    
+
+    /**
+     * @brief Set blue front lighting effects on/off.
+     * 
+     * @param light true turns on, false turns off.
+     */
+    void setBlueFrontLights(bool light);
+
+    /**
+     * @brief Set red back lighting effects on/off.
+     * 
+     * @param light true turns on, false turns off.
+     */
+    void setRedBackLights(bool light);
+
+    /**
+     * @brief Toggle blue front lighting effects on/off.
+     * 
+     */
+    void toggleBlueFrontLights() {
+      setBlueFrontLights(!isBlueFrontLights());
+    };
+
+    /**
+     * @brief Toggle red back lighting effects on/off.
+     * 
+     */
+    void toggleRedBackLights() {
+      setRedBackLights(!isRedBackLights());
+    };
+
     /**
      * @brief Increase volume.
      * 

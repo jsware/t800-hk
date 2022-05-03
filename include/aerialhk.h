@@ -25,8 +25,8 @@ class AerialHunterKiller
     static const int THRUST_MIN = 40;
     static const int THRUST_MAX = 170;
 
-    static const int TILT_CENTER = 90;
-    static const int TILT_MIN = 90;
+    static const int TILT_CENTER = 100;
+    static const int TILT_MIN = 80;
     static const int TILT_MAX = 180;
 
     static const int TURN_CENTER = 85;

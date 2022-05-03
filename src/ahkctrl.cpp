@@ -65,6 +65,8 @@ handle()
   switch(cmd) {
     case CTL_POWER:
       AerialHK.toggleTailLights();
+      AHKEffects.toggleBlueFrontLights();
+      AHKEffects.toggleRedBackLights();
       break;
 
     case CTL_VOLUP:
@@ -89,11 +91,19 @@ handle()
       break;
 
     case CTL_MOVDN:
-      AerialHK.tiltTo(AerialHunterKiller::TILT_MAX);
+      if(AerialHK.getTilt() < AerialHunterKiller::TILT_CENTER) {
+        AerialHK.tiltTo(AerialHunterKiller::TILT_CENTER);        
+      } else {
+        AerialHK.tiltTo(AerialHunterKiller::TILT_MAX);
+      }
       break;
 
     case CTL_MOVUP:
-      AerialHK.tiltTo(AerialHunterKiller::TILT_MIN);
+      if(AerialHK.getTilt() > AerialHunterKiller::TILT_CENTER) {
+        AerialHK.tiltTo(AerialHunterKiller::TILT_CENTER);        
+      } else {
+        AerialHK.tiltTo(AerialHunterKiller::TILT_MIN);
+      }
       break;
 
     case CTL_FNSTP:

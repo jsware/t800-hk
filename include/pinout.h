@@ -25,4 +25,7 @@
 #define PIN_PLASMA_GUN 11
 #define PIN_IR_RECEIVER 12
 
+#define PIN_BLUE_FRONT 14
+#define PIN_RED_BACK 15
+
 #endif /* INCLUDED_PINOUT_H */
