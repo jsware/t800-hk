@@ -58,7 +58,6 @@ begin()
 
   pinMode(PIN_PLASMA_GUN, OUTPUT);
   setPlasmaGun(false);
-  digitalWrite(PIN_PLASMA_GUN, HIGH);
 
   // HK thrusters...
   thrustServoL.attach(PIN_THRUST_SERVO_L, THRUST_CENTER);
