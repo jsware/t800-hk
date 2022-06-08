@@ -20,16 +20,16 @@ class AerialHunterKiller
     //
     // Constants...
     //
-    static const int THRUST_CENTER = 95;
+    static const int THRUST_CENTRE = 110;
     static const int THRUST_OFFSET = 25;
     static const int THRUST_MIN = 40;
     static const int THRUST_MAX = 170;
 
-    static const int TILT_CENTER = 100;
+    static const int TILT_CENTRE = 120;
     static const int TILT_MIN = 80;
     static const int TILT_MAX = 180;
 
-    static const int TURN_CENTER = 85;
+    static const int TURN_CENTRE = 85;
     static const int TURN_MIN = 35;
     static const int TURN_MAX = 135;
 
@@ -49,21 +49,21 @@ class AerialHunterKiller
     //
 
     /**
-     * @brief Get the Tilt angle
+     * @brief Get the Tilt angle.
      * 
      * @return the current tilt angle.
      */
     int getTilt() {
-      return tiltDegrees;
+      return tiltAngle;
     }
 
     /**
-     * @brief Get the Turn angle
+     * @brief Get the Turn angle.
      * 
      * @return the current turn angle.
      */
     int getTurn() {
-      return turnDegrees;
+      return turnAngle;
     }
 
     /**
@@ -104,16 +104,10 @@ class AerialHunterKiller
     //
 
     /**
-     * @brief Begin the AerialHK.
+     * @brief Handle the AHK. Called from main loop to run the HK.
      * 
      */
-    void begin();
-
-    /**
-     * @brief Handle the AHK.
-     * 
-     */
-    void handle();
+    void loop();
 
     /**
      * @brief Set landing lights on/off.
@@ -123,7 +117,7 @@ class AerialHunterKiller
     void setLandingLights(bool light);
 
     /**
-     * @brief Set plasma gun on/off.
+     * @brief Set plasma gun on/off. Gun will flash when on.
      * 
      * @param light true turns on, false turns off.
      */
@@ -143,6 +137,12 @@ class AerialHunterKiller
      */
     void setTailLights(bool light);
     
+    /**
+     * @brief Initialise the AerialHK. Called from main setup.
+     * 
+     */
+    void setup();
+
     /**
      * @brief Toggle landing lights on/off.
      * 
@@ -180,30 +180,45 @@ class AerialHunterKiller
      * 
      */
     void thrustBack();
+
+    /**
+     * @brief Thrust forwards.
+     * 
+     */
     void thrustForward();
+
+    /**
+     * @brief Thrust left. One thruster backwards, the other forwards.
+     * 
+     */
     void thrustLeft();
+
+    /**
+     * @brief Thrust right. One thruster forwards, the other backwards.
+     * 
+     */
     void thrustRight();
 
     /**
      * @brief Thrust to specific position.
      * 
-     * @param thrust Angle of thrust.
+     * @param angle Angle of thrust. Default is to centre.
      */
-    void thrustTo(int thrust);
+    void thrustTo(int angle);
     
     /**
-     * @brief Absolute tilt.
+     * @brief Tilt to specific position.
      * 
-     * @param degrees Angle of tilt.
+     * @param degrees Angle of tilt. Default is to centre.
      */
-    void tiltTo(int degrees = TILT_CENTER);
+    void tiltTo(int angle);
 
     /**
      * @brief Absolute Turn.
      * 
-     * @param degrees Angle of turn.
+     * @param degrees Angle of turn. Default is to centre.
      */
-    void turnTo(int degrees = TURN_CENTER);
+    void turnTo(int angle);
 
   private:
     //
@@ -214,13 +229,35 @@ class AerialHunterKiller
     //
     // Implementation...
     //
-    int tiltDegrees;
-    int turnDegrees;
+
+    /**
+     * @brief The current angle of tilt.
+     * 
+     */
+    int tiltAngle;
+
+    /**
+     * @brief The current angle of turn.
+     * 
+     */
+    int turnAngle;
+
+
+    /**
+     * @brief Indicate if landing lights are on.
+     * 
+     */
+    bool landingLights;
+
+    /**
+     * @brief Indicats whether plasma gun is on (flashing) or off.
+     * 
+     */
     bool plasmaGun;
 };
 
 /**
- * @brief Aerial Hunter Killer Controller.
+ * @brief Single Aerial Hunter Killer.
  * 
  */
 extern AerialHunterKiller AerialHK;

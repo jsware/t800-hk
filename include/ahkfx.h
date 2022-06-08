@@ -1,7 +1,7 @@
 /**
  * @file ahkfx.h
  * @author John Scott
- * @brief Manage Aerial HK effects (mainly sound).
+ * @brief Manage Aerial HK effects (mainly sound and base lights).
  * @version 1.0
  * @date 2022-04-25
  * 
@@ -24,9 +24,10 @@ class AerialHunterKillerEffects
     static const char *SND_FLY;
     static const char *SND_FLYMORE;
     static const char *SND_LAND;
-
+    static const char *SND_SCENE_01;
+    
     static const int VOL_MIN = 0;
-    static const int VOL_CENTER = 15;
+    static const int VOL_CENTRE = 15;
     static const int VOL_MAX = 30;
 
   public:
@@ -66,13 +67,13 @@ class AerialHunterKillerEffects
     //
 
     /**
-     * @brief Begin Controlling the AHK.
+     * @brief Begin Controlling the AHK Effects.
      * 
      */
     void begin();
 
     /**
-     * @brief Handle AHK Controls.
+     * @brief Handle AHK Effects.
      * 
      */
     void handle();
@@ -150,14 +151,33 @@ class AerialHunterKillerEffects
     //
     // Helpers...
     //
+
+    /**
+     * @brief Read sound card acknowledgement.
+     * 
+     * @return true 
+     * @return false 
+     */
     bool readAck();
 
+    /**
+     * @brief Send sound card a command.
+     * 
+     * @param cmd The command (without the AT+ prefix or \r\n newline suffix).
+     * @return true If the sound card acknowledged OK.
+     * @return false  If the sound card did not acknowledge OK.
+     */
     bool atCommand(const char *cmd);
 
   private:
     //
     // Implementation...
     //
+
+    /**
+     * @brief Current volume of sound card.
+     * 
+     */
     int volume;
 };
 

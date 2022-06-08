@@ -28,23 +28,32 @@ ServoEasing tiltServo;
 #define TILT_SPEED 50
 #define TILT_INTERVAL 10000
 
-auto plasmaLed = JLed(PIN_PLASMA_GUN).Blink(50, 50).Forever();
+auto plasmaLed = JLed(PIN_PLASMA_GUN).Off();
+auto landingLed = JLed(PIN_LANDING_LIGHTS).Off();
 
 // Definition of singleton AerialHK.
 AerialHunterKiller AerialHK;
 
 
+//
+// AHK Constructor.
+//
 AerialHunterKiller::
 AerialHunterKiller()
-: tiltDegrees(AerialHunterKiller::TILT_CENTER)
-, turnDegrees(AerialHunterKiller::TURN_CENTER)
+: tiltAngle(AerialHunterKiller::TILT_CENTRE)
+, turnAngle(AerialHunterKiller::TURN_CENTRE)
+, landingLights(false)
 , plasmaGun(false)
 {
   // NOP
 }
 
+
+//
+// AHK setup.
+//
 void AerialHunterKiller::
-begin()
+setup()
 {
   // HK lights...
   pinMode(PIN_LANDING_LIGHTS, OUTPUT);
@@ -60,38 +69,45 @@ begin()
   setPlasmaGun(false);
 
   // HK thrusters...
-  thrustServoL.attach(PIN_THRUST_SERVO_L, THRUST_CENTER);
+  thrustServoL.attach(PIN_THRUST_SERVO_L, THRUST_CENTRE);
   thrustServoL.setSpeed(THRUST_SPEED);
   
-  thrustServoR.attach(PIN_THRUST_SERVO_R, 180-THRUST_CENTER);
+  thrustServoR.attach(PIN_THRUST_SERVO_R, 180-THRUST_CENTRE);
   thrustServoR.setSpeed(THRUST_SPEED);
 
-  turnServo.attach(PIN_TURN_SERVO, turnDegrees);
+  turnServo.attach(PIN_TURN_SERVO, turnAngle);
   turnServo.setEasingType(EASE_QUADRATIC_IN_OUT);
   turnServo.setSpeed(TURN_SPEED);
 
-  tiltServo.attach(PIN_TILT_SERVO, tiltDegrees);
+  tiltServo.attach(PIN_TILT_SERVO, tiltAngle);
   tiltServo.setSpeed(TILT_SPEED);
 }
 
 
+//
+// AHK Loop Handler...
+//
 void AerialHunterKiller::
-handle()
+loop()
 {
-  if(plasmaGun) {
-    Serial.println("Plasma Gun");
-    plasmaLed.Update();
-  }
+  plasmaLed.Update();
+  landingLed.Update();
 }
 
 
+//
+// Determine landing lights on/off.
+//
 bool AerialHunterKiller::
 isLandingLights()
 {
-  return digitalRead(PIN_LANDING_LIGHTS);
+  return landingLights;
 }
 
 
+//
+// Determine plasma gun firing/silent.
+//
 bool AerialHunterKiller::
 isPlasmaGun()
 {
@@ -99,13 +115,9 @@ isPlasmaGun()
 }
 
 
-bool AerialHunterKiller::
-isTailLights()
-{
-  return digitalRead(PIN_TAIL_LIGHTS);
-}
-
-
+//
+// Determine search lights on/off.
+//
 bool AerialHunterKiller::
 isSearchLights()
 {
@@ -113,15 +125,69 @@ isSearchLights()
 }
 
 
+//
+// Determine tail lights on/off.
+//
+bool AerialHunterKiller::
+isTailLights()
+{
+  return digitalRead(PIN_TAIL_LIGHTS);
+}
+
+
+//
+// Thrust backwards.
+//
 void AerialHunterKiller::
 thrustBack()
 {
-  int thrust = THRUST_CENTER - THRUST_OFFSET;
+  int thrust = THRUST_CENTRE - THRUST_OFFSET;
   thrustServoL.startEaseTo(thrust);
   thrustServoR.startEaseTo(180-thrust);
 }
 
 
+//
+// Thrust forward.
+//
+void AerialHunterKiller::
+thrustForward()
+{
+  int thrust = THRUST_CENTRE + THRUST_OFFSET;
+  thrustServoL.startEaseTo(thrust);
+  thrustServoR.startEaseTo(180-thrust);
+}
+
+
+//
+// Thrust left.
+//
+void AerialHunterKiller::
+thrustLeft()
+{
+  int thrustL = THRUST_CENTRE - THRUST_OFFSET;
+  int thrustR = THRUST_CENTRE + THRUST_OFFSET; 
+  thrustServoL.startEaseTo(thrustL);
+  thrustServoR.startEaseTo(180-thrustR);
+}
+
+
+//
+// Thrust right.
+//
+void AerialHunterKiller::
+thrustRight()
+{
+  int thrustL = THRUST_CENTRE + THRUST_OFFSET;
+  int thrustR = THRUST_CENTRE - THRUST_OFFSET;
+  thrustServoL.startEaseTo(thrustL);
+  thrustServoR.startEaseTo(180-thrustR);
+}
+
+
+//
+// Thrust to specific angle.
+//
 void AerialHunterKiller::
 thrustTo(int thrust)
 {
@@ -130,33 +196,9 @@ thrustTo(int thrust)
 }
 
 
-void AerialHunterKiller::
-thrustForward()
-{
-  int thrust = THRUST_CENTER + THRUST_OFFSET;
-  thrustServoL.startEaseTo(thrust);
-  thrustServoR.startEaseTo(180-thrust);
-}
-
-
-void AerialHunterKiller::
-thrustLeft()
-{
-  int thrust = THRUST_CENTER - THRUST_OFFSET;
-  thrustServoL.startEaseTo(thrust);
-  thrustServoR.startEaseTo(thrust);
-}
-
-
-void AerialHunterKiller::
-thrustRight()
-{
-  int thrust = THRUST_CENTER + THRUST_OFFSET;
-  thrustServoL.startEaseTo(thrust);
-  thrustServoR.startEaseTo(thrust);
-}
-
-
+//
+// Tilt to specific angle.
+//
 void AerialHunterKiller::
 tiltTo(int degrees)
 {
@@ -166,54 +208,24 @@ tiltTo(int degrees)
     degrees = TILT_MAX;
   }
 
-  if(degrees > tiltDegrees) {
+  if(degrees > tiltAngle) {
     thrustForward();
-  } else if(degrees < tiltDegrees) {
+  } else if(degrees < tiltAngle) {
     thrustBack();
   } else if(degrees == TILT_MAX) {
     thrustTo(THRUST_MAX);
   } else {
-    thrustTo(THRUST_CENTER);
+    thrustTo(THRUST_CENTRE);
   }
 
   tiltServo.startEaseTo(degrees);
-  tiltDegrees = degrees;
+  tiltAngle = degrees;
 }
 
 
-void AerialHunterKiller::
-setLandingLights(bool light)
-{
-  digitalWrite(PIN_LANDING_LIGHTS, light);
-}
-
-
-void AerialHunterKiller::
-setPlasmaGun(bool light)
-{
-  plasmaGun = light;
-  if(!light) {
-    digitalWrite(PIN_PLASMA_GUN, light);
-  } else {
-    plasmaLed.Update();
-  }
-}
-
-
-void AerialHunterKiller::
-setSearchLights(bool light)
-{
-  digitalWrite(PIN_SEARCH_LIGHTS, light);
-}
-
-
-void AerialHunterKiller::
-setTailLights(bool light)
-{
-  digitalWrite(PIN_TAIL_LIGHTS, light);
-}
-
-
+//
+// Turn to specific degrees (thrusting left/right as required).
+//
 void AerialHunterKiller::
 turnTo(int degrees)
 {
@@ -223,14 +235,65 @@ turnTo(int degrees)
     degrees = TURN_MAX;
   }
 
-  if(degrees > turnDegrees) {
+  if(degrees > turnAngle) {
     thrustLeft();
-  } else if(degrees < turnDegrees) {
+  } else if(degrees < turnAngle) {
     thrustRight();
   } else {
-    thrustTo(THRUST_CENTER);
+    thrustTo(THRUST_CENTRE);
   }
 
   turnServo.startEaseTo(degrees);
-  turnDegrees = degrees;
+  turnAngle = degrees;
+}
+
+
+//
+// Set landing lights on/off.
+//
+void AerialHunterKiller::
+setLandingLights(bool light)
+{
+  if(light) {
+    landingLed.Reset().FadeOn(1500).Repeat(1).Update();
+  } else if(landingLights) {
+    landingLed.Reset().FadeOff(1500).Repeat(1).Update();
+  }
+
+  landingLights = light;
+}
+
+
+//
+// Set plasma gun on/off.
+//
+void AerialHunterKiller::
+setPlasmaGun(bool light)
+{
+  plasmaGun = light;
+  if(!light) {
+    plasmaLed.Reset().Off().Forever().Update();
+  } else {
+    plasmaLed.Reset().Blink(50,50).Forever().Update();
+  }
+}
+
+
+//
+// Set search lights on/off.
+//
+void AerialHunterKiller::
+setSearchLights(bool light)
+{
+  digitalWrite(PIN_SEARCH_LIGHTS, light);
+}
+
+
+//
+// Set tail lights on/off.
+//
+void AerialHunterKiller::
+setTailLights(bool light)
+{
+  digitalWrite(PIN_TAIL_LIGHTS, light);
 }

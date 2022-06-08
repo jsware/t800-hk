@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2022 John Scott.
  */
 #include <Arduino.h>
+#include <jled.h>
 #include <SoftwareSerial.h>
 #include "ahkfx.h"
 #include "aerialhk.h"
@@ -19,16 +20,20 @@ AerialHunterKillerEffects AHKEffects;
 // Serial port to DFPlayer Pro.
 SoftwareSerial DFSerial(PIN_SOUND_RX, PIN_SOUND_TX);  //RX  TX
 
+auto blueFrontLed = JLed(PIN_BLUE_FRONT).Off();
+auto redBackLed = JLed(PIN_RED_BACK).Off();
 
+// Sound files.
 const char *AerialHunterKillerEffects::SND_STOP = "/stop.mp3";
 const char *AerialHunterKillerEffects::SND_FLY = "/fly.mp3";
 const char *AerialHunterKillerEffects::SND_FLYMORE = "/flymore.mp3";
 const char *AerialHunterKillerEffects::SND_LAND = "/land.mp3";
+const char *AerialHunterKillerEffects::SND_SCENE_01 = "/cut01.mp3";
 
 
 AerialHunterKillerEffects::
 AerialHunterKillerEffects()
-: volume(VOL_CENTER)
+: volume(VOL_CENTRE)
 {
   // NOP
 }
@@ -37,13 +42,14 @@ AerialHunterKillerEffects()
 void AerialHunterKillerEffects::
 begin()
 {
+  Serial.println(F("\nStarting Sound Effects..."));
   DFSerial.begin(115200);
 
   atCommand("PLAYMODE=3");
   stop();
-  setVolume(VOL_CENTER);
+  setVolume(VOL_CENTRE);
 
-  Serial.println(F("\nSound Effects Online"));
+  Serial.println(F("Sound Effects Online"));
 
   pinMode(PIN_BLUE_FRONT, OUTPUT);
   setBlueFrontLights(false);
@@ -56,7 +62,8 @@ begin()
 void AerialHunterKillerEffects::
 handle()
 {
-
+  blueFrontLed.Update();
+  redBackLed.Update();
 }
 
 bool AerialHunterKillerEffects::
@@ -123,13 +130,21 @@ play(const char *sound) {
 void AerialHunterKillerEffects::
 setBlueFrontLights(bool light)
 {
-  digitalWrite(PIN_BLUE_FRONT, light);
+  if(light) {
+    blueFrontLed.On().Forever().Reset();
+  } else {
+    blueFrontLed.Off().Forever().Reset();
+  }
 }
 
 void AerialHunterKillerEffects::
 setRedBackLights(bool light)
 {
-  digitalWrite(PIN_RED_BACK, light);
+  if(light) {
+    redBackLed.Reset().On().Forever().Update();
+  } else {
+    redBackLed.Reset().Off().Forever().Update();
+  }
 }
 
 void AerialHunterKillerEffects::

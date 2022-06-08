@@ -11,7 +11,7 @@
 #define INCLUDED_AHKCTRL_H
 
 /**
- * @brief Aerial Hunter-Killer.
+ * @brief Aerial Hunter-Killer Controller.
  * 
  */
 class AerialHunterKillerController
@@ -20,18 +20,17 @@ class AerialHunterKillerController
     //
     // Constants...
     //
-    static const char CTL_POWER = '*';
-    static const char CTL_VOLUP = '+';
-    static const char CTL_VOLDN = '-';
-    static const char CTL_PLAYP = '|';
-    static const char CTL_REWND = '<';
-    static const char CTL_FASTF = '>';
-    static const char CTL_MOVDN = 'V';
-    static const char CTL_MOVUP = '^';
-    static const char CTL_FNSTP = '!';
-    static const char CTL_EQUAL = '=';
-    static const char CTL_STRPT = '/';
-
+    static const char CTL_POWER = '*'; ///< Power On/off.
+    static const char CTL_VOLUP = '+'; ///< Volume up.
+    static const char CTL_VOLDN = '-'; ///< Volume down.
+    static const char CTL_PLAYP = '|'; ///< Play/Pause.
+    static const char CTL_REWND = '<'; ///< Rewind.
+    static const char CTL_FASTF = '>'; ///< Fast Forward.
+    static const char CTL_MOVDN = 'V'; ///< Move Down.
+    static const char CTL_MOVUP = '^'; ///< Move Up.
+    static const char CTL_FNSTP = '!'; ///< Func/Stop.
+    static const char CTL_EQUAL = '='; ///< EQ.
+    static const char CTL_STRPT = '/'; ///< ST/REPT.
 
   public:
     //
@@ -39,7 +38,7 @@ class AerialHunterKillerController
     //
 
     /**
-     * @brief Construct a new Aerial HK.
+     * @brief Construct a new Aerial HK Controller.
      */
     AerialHunterKillerController();
 
@@ -47,36 +46,65 @@ class AerialHunterKillerController
     //
     // Mutators...
     //
-
-    /**
-     * @brief Begin Controlling the AHK.
-     * 
-     */
-    void begin();
-
-    /**
-     * @brief Handle AHK Controls.
-     * 
-     */
-    void handle();
+    void setup(); ///< Setup controller.
+    void loop(); ///< Handle AHK Controls.
     
   private:
     //
     // Helpers...
     //
+    void reset(); ///< Reset HK - everything off and centre.
 
     /**
-     * @brief Translate IR Codes into standard commands.
+     * @brief Set timed control of the Aerial HK and Aerial HK Effects.
      * 
+     * @param timings The array of timings (null terminated).
      */
-    char translateIR();
+    void setTimings(const struct AsyncTiming timings[]);
+
+    char translateIR(); ///< Translate IR Codes into standard commands.
+
+
+  private:
+    //
+    // Static Helpers (callbacks).
+    //
+    static void blueFrontLightsFlash(); ///< Blue front lights flashing.
+    static void blueFrontLightsOff(); ///< Blue front lights off.
+    static void blueFrontLightsOn(); ///< Blue front light on.
+
+    static void plasmaGunOff(); ///< Turn plasma gun off timer callback.
+    static void plasmaGunOn(); ///< Turn plasma gun on (flashing) on timer callback.
+
+    static void playFlyMore(); ///< Repeat flying sounds timer callback.
+    static void playLanding(); ///< Play landing sounds timer callback.
+    static void playScene01(); ///< Play cut scene 01 timer callback.
+    static void playTakeOff(); ///< Play take-off sounds timer callback.
+
+    static void redBackLightsFlash(); ///< Red back lights flashing.
+    static void redBackLightsOff(); ///< Red back lights off.
+    static void redBackLightsOn(); ///< Red back light on.
+
+    static void searchLightsOff(); ///< Turn search lights off timer callback.
+    static void searchLightsOn(); ///< Turn search lights on timer callback.
+
+    static void landingLightsOff(); ///< Turn landing lights off timer callback.
+    static void landingLightsOn(); ///< Turn landing lights on timer callback.
+    
+    static void tailLightsOff(); ///< Turn tail lights off timer callback.
+    static void tailLightsOn(); ///< Turn tail lights on timer callback.
+
+    static void takeOff();
 
   private:
     //
     // Implementation...
     //
-    int irPin;
+    static const struct AsyncTiming CUT_SCENE_01[]; ///< Cut scene 1.
+    static const struct AsyncTiming POWER_OFF[]; ///< Power off timer sequence.
+    static const struct AsyncTiming POWER_ON[]; ///< Power on timer sequence.
 
+    int irPin; ///< IR Remote Control PIN.
 };
 
 /**
