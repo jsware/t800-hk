@@ -14,286 +14,238 @@
 #include "aerialhk.h"
 #include "pinout.h"
 
-// Thrusters...
+// Servos...
 ServoEasing thrustServoL;
 ServoEasing thrustServoR;
-#define THRUST_SPEED 125
-#define THRUST_INTERVAL 1000
-
 ServoEasing turnServo;
-#define TURN_SPEED 25
-#define TURN_INTERVAL 9000
-
 ServoEasing tiltServo;
-#define TILT_SPEED 50
-#define TILT_INTERVAL 10000
 
 auto plasmaLed = JLed(PIN_PLASMA_GUN).Off();
 auto landingLed = JLed(PIN_LANDING_LIGHTS).Off();
 
-// Definition of singleton AerialHK.
-AerialHunterKiller AerialHK;
-
-
-//
-// AHK Constructor.
-//
-AerialHunterKiller::
-AerialHunterKiller()
-: tiltAngle(AerialHunterKiller::TILT_CENTRE)
-, turnAngle(AerialHunterKiller::TURN_CENTRE)
-, landingLights(false)
-, plasmaGun(false)
-{
-  // NOP
-}
+static int tiltAngle = AHK_TILT_CENTRE;
+static int turnAngle = AHK_TURN_CENTRE;
 
 
 //
 // AHK setup.
 //
-void AerialHunterKiller::
-setup()
-{
+void setupAHK() {
   // HK lights...
   pinMode(PIN_LANDING_LIGHTS, OUTPUT);
-  setLandingLights(false);
+  landingLightsOff();
 
   pinMode(PIN_SEARCH_LIGHTS, OUTPUT);
-  setSearchLights(false);
+  searchLightsOff();
 
   pinMode(PIN_TAIL_LIGHTS, OUTPUT);
-  setTailLights(false);
+  tailLightsOff();
 
   pinMode(PIN_PLASMA_GUN, OUTPUT);
-  setPlasmaGun(false);
+  plasmaGunOff();
 
   // HK thrusters...
-  thrustServoL.attach(PIN_THRUST_SERVO_L, THRUST_CENTRE);
-  thrustServoL.setSpeed(THRUST_SPEED);
+  thrustServoL.attach(PIN_THRUST_SERVO_L, AHK_THRUST_CENTRE);
+  thrustServoL.setSpeed(AHK_THRUST_SPEED);
   
-  thrustServoR.attach(PIN_THRUST_SERVO_R, 180-THRUST_CENTRE);
-  thrustServoR.setSpeed(THRUST_SPEED);
+  thrustServoR.attach(PIN_THRUST_SERVO_R, 180-AHK_THRUST_CENTRE);
+  thrustServoR.setSpeed(AHK_THRUST_SPEED);
 
   turnServo.attach(PIN_TURN_SERVO, turnAngle);
   turnServo.setEasingType(EASE_QUADRATIC_IN_OUT);
-  turnServo.setSpeed(TURN_SPEED);
+  turnServo.setSpeed(AHK_TURN_SPEED);
 
   tiltServo.attach(PIN_TILT_SERVO, tiltAngle);
-  tiltServo.setSpeed(TILT_SPEED);
+  tiltServo.setSpeed(AHK_TILT_SPEED);
 }
 
 
 //
 // AHK Loop Handler...
 //
-void AerialHunterKiller::
-loop()
-{
+void loopAHK() {
   plasmaLed.Update();
   landingLed.Update();
 }
 
 
 //
-// Determine landing lights on/off.
+// Tail Lights...
 //
-bool AerialHunterKiller::
-isLandingLights()
-{
-  return landingLights;
-}
-
-
-//
-// Determine plasma gun firing/silent.
-//
-bool AerialHunterKiller::
-isPlasmaGun()
-{
-  return plasmaGun;
-}
-
-
-//
-// Determine search lights on/off.
-//
-bool AerialHunterKiller::
-isSearchLights()
-{
-  return digitalRead(PIN_SEARCH_LIGHTS);
-}
-
-
-//
-// Determine tail lights on/off.
-//
-bool AerialHunterKiller::
-isTailLights()
-{
+bool isTailLights() {
   return digitalRead(PIN_TAIL_LIGHTS);
 }
 
+void tailLightsOn() {
+  digitalWrite(PIN_TAIL_LIGHTS, true);
+}
 
-//
-// Thrust backwards.
-//
-void AerialHunterKiller::
-thrustBack()
-{
-  int thrust = THRUST_CENTRE - THRUST_OFFSET;
-  thrustServoL.startEaseTo(thrust);
-  thrustServoR.startEaseTo(180-thrust);
+void tailLightsOff() {
+  digitalWrite(PIN_TAIL_LIGHTS, false);
 }
 
 
 //
-// Thrust forward.
+// Landing Lights...
 //
-void AerialHunterKiller::
-thrustForward()
-{
-  int thrust = THRUST_CENTRE + THRUST_OFFSET;
-  thrustServoL.startEaseTo(thrust);
-  thrustServoR.startEaseTo(180-thrust);
+bool isLandingLights() {
+  return digitalRead(PIN_LANDING_LIGHTS);
+}
+
+void landingLightsOn() {
+  if(!isLandingLights()) {
+    landingLed.Reset().FadeOn(1500).Repeat(1).Update();
+  }
+}
+
+void landingLightsOnOff() {
+  if(!isLandingLights()) {
+    landingLed.Reset().Breathe(1500,7000,1500).Repeat(1).Update();
+  }
+}
+
+void landingLightsOff() {
+  if(isLandingLights()) {
+    landingLed.Reset().FadeOff(1500).Repeat(1).Update();
+  }
 }
 
 
 //
-// Thrust left.
+// Search Lights...
 //
-void AerialHunterKiller::
-thrustLeft()
-{
-  int thrustL = THRUST_CENTRE - THRUST_OFFSET;
-  int thrustR = THRUST_CENTRE + THRUST_OFFSET; 
+bool isSearchLights() {
+  return digitalRead(PIN_SEARCH_LIGHTS);
+}
+
+void searchLightsOn() {
+  digitalWrite(PIN_SEARCH_LIGHTS, true);
+}
+
+void searchLightsOff() {
+  digitalWrite(PIN_SEARCH_LIGHTS, false);
+}
+
+
+//
+// Plasma Gun...
+//
+bool isPlasmaGun() {
+  return plasmaLed.IsRunning();
+}
+
+void plasmaGunOn() {
+  plasmaLed.Reset().Blink(50,50).Forever().Update();
+}
+
+void plasmaGunOff() {
+  plasmaLed.Reset().Off().Repeat(1).Update();
+}
+
+void plasmaGunOn200() {
+  plasmaLed.Reset().Blink(50,50).Repeat(2).Update();
+}
+
+//
+// Thruster Servos...
+//
+void thrustTo(int thrust) {
+  thrustServoL.startEaseTo(thrust);
+  thrustServoR.startEaseTo(180-thrust);
+}
+
+void thrustBack() {
+  thrustTo(AHK_THRUST_CENTRE - AHK_THRUST_OFFSET);
+}
+
+void thrustHover() {
+  thrustTo(AHK_THRUST_CENTRE);
+}
+
+void thrustForward() {
+  thrustTo(AHK_THRUST_CENTRE + AHK_THRUST_OFFSET);
+}
+
+void thrustLeft() {
+  int thrustL = AHK_THRUST_CENTRE - AHK_THRUST_OFFSET;
+  int thrustR = AHK_THRUST_CENTRE + AHK_THRUST_OFFSET; 
+  thrustServoL.startEaseTo(thrustL);
+  thrustServoR.startEaseTo(180-thrustR);
+}
+
+void thrustRight() {
+  int thrustL = AHK_THRUST_CENTRE + AHK_THRUST_OFFSET;
+  int thrustR = AHK_THRUST_CENTRE - AHK_THRUST_OFFSET;
   thrustServoL.startEaseTo(thrustL);
   thrustServoR.startEaseTo(180-thrustR);
 }
 
 
 //
-// Thrust right.
+// Tilt Servo...
 //
-void AerialHunterKiller::
-thrustRight()
-{
-  int thrustL = THRUST_CENTRE + THRUST_OFFSET;
-  int thrustR = THRUST_CENTRE - THRUST_OFFSET;
-  thrustServoL.startEaseTo(thrustL);
-  thrustServoR.startEaseTo(180-thrustR);
+int getTilt() {
+  return tiltAngle;
 }
 
-
-//
-// Thrust to specific angle.
-//
-void AerialHunterKiller::
-thrustTo(int thrust)
-{
-  thrustServoL.startEaseTo(thrust);
-  thrustServoR.startEaseTo(180-thrust);
-}
-
-
-//
-// Tilt to specific angle.
-//
-void AerialHunterKiller::
-tiltTo(int degrees)
-{
-  if(degrees < TILT_MIN) {
-    degrees = TILT_MIN;
-  } else if(degrees > TILT_MAX) {
-    degrees = TILT_MAX;
+void tiltTo(int degrees) {
+  if(degrees < AHK_TILT_MIN) {
+    degrees = AHK_TILT_MIN;
+  } else if(degrees > AHK_TILT_MAX) {
+    degrees = AHK_TILT_MAX;
   }
 
   if(degrees > tiltAngle) {
     thrustForward();
   } else if(degrees < tiltAngle) {
     thrustBack();
-  } else if(degrees == TILT_MAX) {
-    thrustTo(THRUST_MAX);
-  } else {
-    thrustTo(THRUST_CENTRE);
   }
 
   tiltServo.startEaseTo(degrees);
   tiltAngle = degrees;
 }
 
+void tiltLevel() {
+  tiltTo(AHK_TILT_CENTRE);
+}
+
+void tiltForward() {
+  tiltTo(AHK_TILT_MAX);
+}
+
+void tiltBackward() {
+  tiltTo(AHK_TILT_MIN);
+}
+
 
 //
-// Turn to specific degrees (thrusting left/right as required).
+// Turn Servo...
 //
-void AerialHunterKiller::
-turnTo(int degrees)
-{
-  if(degrees < TURN_MIN) {
-    degrees = TURN_MIN;
-  } else if(degrees > TURN_MAX) {
-    degrees = TURN_MAX;
+void turnTo(int degrees) {
+  if(degrees < AHK_TURN_MIN) {
+    degrees = AHK_TURN_MIN;
+  } else if(degrees > AHK_TURN_MAX) {
+    degrees = AHK_TURN_MAX;
   }
 
   if(degrees > turnAngle) {
     thrustLeft();
   } else if(degrees < turnAngle) {
     thrustRight();
-  } else {
-    thrustTo(THRUST_CENTRE);
   }
 
   turnServo.startEaseTo(degrees);
   turnAngle = degrees;
 }
 
-
-//
-// Set landing lights on/off.
-//
-void AerialHunterKiller::
-setLandingLights(bool light)
-{
-  if(light) {
-    landingLed.Reset().FadeOn(1500).Repeat(1).Update();
-  } else if(landingLights) {
-    landingLed.Reset().FadeOff(1500).Repeat(1).Update();
-  }
-
-  landingLights = light;
+void turnLeft() {
+  turnTo(AHK_TURN_MAX);
 }
 
-
-//
-// Set plasma gun on/off.
-//
-void AerialHunterKiller::
-setPlasmaGun(bool light)
-{
-  plasmaGun = light;
-  if(!light) {
-    plasmaLed.Reset().Off().Forever().Update();
-  } else {
-    plasmaLed.Reset().Blink(50,50).Forever().Update();
-  }
+void turnCentre() {
+  turnTo(AHK_TURN_CENTRE);
 }
 
-
-//
-// Set search lights on/off.
-//
-void AerialHunterKiller::
-setSearchLights(bool light)
-{
-  digitalWrite(PIN_SEARCH_LIGHTS, light);
-}
-
-
-//
-// Set tail lights on/off.
-//
-void AerialHunterKiller::
-setTailLights(bool light)
-{
-  digitalWrite(PIN_TAIL_LIGHTS, light);
+void turnRight() {
+  turnTo(AHK_TURN_MIN);
 }

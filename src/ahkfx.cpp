@@ -11,76 +11,41 @@
 #include <jled.h>
 #include <SoftwareSerial.h>
 #include "ahkfx.h"
-#include "aerialhk.h"
 #include "pinout.h"
 
-// Definition of singleton AHKController.
-AerialHunterKillerEffects AHKEffects;
+
+//
+// Base LEDs...
+//
+auto blueFrontLed = JLed(PIN_BLUE_FRONT).Off();
+auto redBackLed = JLed(PIN_RED_BACK).Off();
+
+
+//
+// Sounds...
+//
+#define VOL_MIN 0
+#define VOL_CENTRE 15
+#define VOL_MAX 30
+static int volume = VOL_CENTRE;
+
+// Sound commands.
+#define SND_PLAYMODE F("AT+PLAYMODE=3\r\n")
+#define SND_VOLUME F("AT+VOL=")
+#define SND_VOLUME_END F("\r\n")
+#define SND_STOP F("AT+PLAYFILE=/stop.mp3\r\n")
+#define SND_FLY F("AT+PLAYFILE=/fly.mp3\r\n")
+#define SND_FLYMORE F("AT+PLAYFILE=/flymore.mp3\r\n")
+#define SND_LAND F("AT+PLAYFILE=/land.mp3\r\n")
+#define SND_SCENE_01 F("AT+PLAYFILE=/cut01.mp3\r\n")
 
 // Serial port to DFPlayer Pro.
 SoftwareSerial DFSerial(PIN_SOUND_RX, PIN_SOUND_TX);  //RX  TX
 
-auto blueFrontLed = JLed(PIN_BLUE_FRONT).Off();
-auto redBackLed = JLed(PIN_RED_BACK).Off();
 
-// Sound files.
-const char *AerialHunterKillerEffects::SND_STOP = "/stop.mp3";
-const char *AerialHunterKillerEffects::SND_FLY = "/fly.mp3";
-const char *AerialHunterKillerEffects::SND_FLYMORE = "/flymore.mp3";
-const char *AerialHunterKillerEffects::SND_LAND = "/land.mp3";
-const char *AerialHunterKillerEffects::SND_SCENE_01 = "/cut01.mp3";
-
-
-AerialHunterKillerEffects::
-AerialHunterKillerEffects()
-: volume(VOL_CENTRE)
-{
-  // NOP
-}
-
-
-void AerialHunterKillerEffects::
-begin()
-{
-  Serial.println(F("\nStarting Sound Effects..."));
-  DFSerial.begin(115200);
-
-  atCommand("PLAYMODE=3");
-  stop();
-  setVolume(VOL_CENTRE);
-
-  Serial.println(F("Sound Effects Online"));
-
-  pinMode(PIN_BLUE_FRONT, OUTPUT);
-  setBlueFrontLights(false);
-
-  pinMode(PIN_RED_BACK, OUTPUT);
-  setRedBackLights(false);
-}
-
-
-void AerialHunterKillerEffects::
-handle()
-{
-  blueFrontLed.Update();
-  redBackLed.Update();
-}
-
-bool AerialHunterKillerEffects::
-isBlueFrontLights()
-{
-  return digitalRead(PIN_BLUE_FRONT);
-}
-
-bool AerialHunterKillerEffects::
-isRedBackLights()
-{
-  return digitalRead(PIN_RED_BACK);
-}
-
-bool AerialHunterKillerEffects::
-readAck() {
-  String str = "";
+static void readAck() {
+  char str[81];
+  int i = 0;
   char c = '\0';
   long ms = millis();
 
@@ -88,76 +53,127 @@ readAck() {
     if(DFSerial.available()) {
       c = DFSerial.read();
       if(isprint(c)) {
-        str += c;
+        str[i++] = c;
       }
     }
 
-    if(c == '\n') break;
+    if(c == '\n' || i >= (int)(sizeof(str)-1)) break;
   }
 
-  Serial.println(str);
-  if(str == "OK") {
-    return true;
-  } else {
-    return false;
+  str[i]='\0';
+  if(strcmp(str, "OK")) {
+    Serial.print("FX? ");
+    Serial.println(str);
   }
 }
 
-bool AerialHunterKillerEffects::
-atCommand(const char *cmd) {
-  if(cmd) {
-    Serial.print("AT+");
-    Serial.println(cmd);
 
-    DFSerial.print("AT+");
-    DFSerial.print(cmd);
-    DFSerial.print("\r\n");
-  } else {
-    DFSerial.print("AT\r\n");    
-  }
-
-  return readAck();
-}
-
-void AerialHunterKillerEffects::
-play(const char *sound) {
-  String cmd = "PLAYFILE=";
-
-  cmd += sound;
-  atCommand(cmd.c_str());
-}
-
-void AerialHunterKillerEffects::
-setBlueFrontLights(bool light)
+void setupAHKEffects()
 {
-  if(light) {
-    blueFrontLed.On().Forever().Reset();
-  } else {
-    blueFrontLed.Off().Forever().Reset();
-  }
+  DFSerial.begin(115200);
+
+  DFSerial.print(SND_PLAYMODE); readAck();
+  stopPlaying();
+  volumeCentre();
+
+  pinMode(PIN_BLUE_FRONT, OUTPUT);
+  blueFrontLightsOff();
+
+  pinMode(PIN_RED_BACK, OUTPUT);
+  redBackLightsOff();
 }
 
-void AerialHunterKillerEffects::
-setRedBackLights(bool light)
+
+void loopAHKEffects()
 {
-  if(light) {
-    redBackLed.Reset().On().Forever().Update();
-  } else {
-    redBackLed.Reset().Off().Forever().Update();
-  }
+  blueFrontLed.Update();
+  redBackLed.Update();
 }
 
-void AerialHunterKillerEffects::
-setVolume(int level) {
-  String cmd = "VOL=";
 
+bool isBlueFrontLights()
+{
+  return digitalRead(PIN_BLUE_FRONT);
+}
+
+void blueFrontLightsOn()
+{
+  blueFrontLed.On().Forever().Reset();
+}
+
+void blueFrontLightsOff()
+{
+  blueFrontLed.Off().Forever().Reset();
+}
+
+void blueFrontLightsFlash() {
+  blueFrontLed.Reset().Blink(200,50).Repeat(1).Update();  
+}
+
+bool isRedBackLights()
+{
+  return digitalRead(PIN_RED_BACK);
+}
+
+void redBackLightsOn()
+{
+  redBackLed.Reset().On().Forever().Update();
+}
+
+void redBackLightsOff()
+{
+  redBackLed.Reset().Off().Forever().Update();
+}
+
+void redBackLightsFlash() {
+  redBackLed.Reset().Blink(200,50).Repeat(1).Update();  
+}
+
+
+
+static void setVolume(int level) {
   if(level < VOL_MIN) {
     level = VOL_MIN;
   } else if(level > VOL_MAX) {
     level = VOL_MAX;
   }
 
-  cmd += level;
-  atCommand(cmd.c_str());
+  DFSerial.print(SND_VOLUME);
+  DFSerial.print(level);
+  DFSerial.print(SND_VOLUME_END);
+  readAck();
+
   volume = level;
+}
+
+void volumeUp() {
+  setVolume(volume + 5);
+}
+
+void volumeCentre() {
+  setVolume(VOL_CENTRE);
+}
+
+void volumeDown() {
+  setVolume(volume - 5);
+}
+
+void stopPlaying() {
+  DFSerial.print(SND_STOP); readAck();
+}
+
+void playTakeoff() {
+  DFSerial.print(SND_FLY); readAck();
+}
+
+void playLanding() {
+  DFSerial.print(SND_LAND); readAck();
+}
+
+void playFlyMore() {
+  DFSerial.print(SND_FLYMORE); readAck();
+}
+
+void playScene01() {
+  DFSerial.print(SND_SCENE_01); readAck();
 }

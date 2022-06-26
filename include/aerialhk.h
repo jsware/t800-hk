@@ -10,256 +10,57 @@
 #ifndef INCLUDED_AERIALHK_H
 #define INCLUDED_AERIALHK_H
 
-/**
- * @brief Aerial Hunter-Killer.
- * 
- */
-class AerialHunterKiller
-{
-  public:
-    //
-    // Constants...
-    //
-    static const int THRUST_CENTRE = 110;
-    static const int THRUST_OFFSET = 25;
-    static const int THRUST_MIN = 40;
-    static const int THRUST_MAX = 170;
+#define AHK_THRUST_CENTRE 110
+#define AHK_THRUST_SPEED 125
+#define AHK_THRUST_OFFSET 25
+#define AHK_THRUST_MIN 40
+#define AHK_THRUST_MAX 170
 
-    static const int TILT_CENTRE = 120;
-    static const int TILT_MIN = 80;
-    static const int TILT_MAX = 180;
+#define AHK_TILT_CENTRE 120
+#define AHK_TILT_MIN 80
+#define AHK_TILT_MAX 180
+#define AHK_TILT_SPEED 50
 
-    static const int TURN_CENTRE = 85;
-    static const int TURN_MIN = 35;
-    static const int TURN_MAX = 135;
+#define AHK_TURN_CENTRE 85
+#define AHK_TURN_MIN 35
+#define AHK_TURN_MAX 135
+#define AHK_TURN_SPEED 25
 
-  public:
-    //
-    // Constructors...
-    //
+void setupAHK(); ///< Setup the AHK. Called by main setup.
+void loopAHK(); ///< Handle the AHK. Called from main loop to run the HK.
 
-    /**
-     * @brief Construct a new Aerial HK.
-     */
-    AerialHunterKiller();
+bool isTailLights(); ///< Tail lights on/off.
+void tailLightsOn(); ///< Tail lights on.
+void tailLightsOff(); ///< Tail lights off.
 
-  public:
-    //
-    // Accessors...
-    //
+bool isLandingLights(); ///< Landing lights on/off.
+void landingLightsOn(); ///< Landing lights on.
+void landingLightsOnOff(); ///< Landing lights on then off.
+void landingLightsOff(); ///< Landing lights off.
 
-    /**
-     * @brief Get the Tilt angle.
-     * 
-     * @return the current tilt angle.
-     */
-    int getTilt() {
-      return tiltAngle;
-    }
+bool isSearchLights();
+void searchLightsOn(); ///< Search lights on.
+void searchLightsOff(); ///< Search lights off.
 
-    /**
-     * @brief Get the Turn angle.
-     * 
-     * @return the current turn angle.
-     */
-    int getTurn() {
-      return turnAngle;
-    }
+bool isPlasmaGun(); ///< Plasma gun firing/not.
+void plasmaGunOn(); ///< Start firing.
+void plasmaGunOn200(); ///< Start firing for 200ms.
+void plasmaGunOff(); ///< Stop firing.
 
-    /**
-     * @brief Indicate landing lights on/off.
-     * 
-     * @return true when lights on.
-     * @return false when lights off.
-     */
-    bool isLandingLights();
+int getTilt();
+void tiltForward();
+void tiltLevel();
+void tiltBackward();
 
-    /**
-     * @brief Indicate plasma gun on/off.
-     * 
-     * @return true when gun on.
-     * @return false when gun off.
-     */
-    bool isPlasmaGun();
+int getTurn();
+void turnLeft();
+void turnCentre();
+void turnRight();
 
-    /**
-     * @brief Indicate if the tail lights are on.
-     * 
-     * @return true when lights on.
-     * @return false when lights off.
-     */
-    bool isTailLights();
-
-    /**
-     * @brief Indicate if the search lights are on.
-     * 
-     * @return true when lights on.
-     * @return false when lights off.
-     */
-    bool isSearchLights();
-
-  public:
-    //
-    // Mutators...
-    //
-
-    /**
-     * @brief Handle the AHK. Called from main loop to run the HK.
-     * 
-     */
-    void loop();
-
-    /**
-     * @brief Set landing lights on/off.
-     * 
-     * @param light true turns on, false turns off.
-     */
-    void setLandingLights(bool light);
-
-    /**
-     * @brief Set plasma gun on/off. Gun will flash when on.
-     * 
-     * @param light true turns on, false turns off.
-     */
-    void setPlasmaGun(bool light);
-
-    /**
-     * @brief Set search lights on/off
-     * 
-     * @param light true turns on, false turns off.
-     */
-    void setSearchLights(bool light);
-
-    /**
-     * @brief Set tail lights on/off.
-     * 
-     * @param light true turns on, false turns off.
-     */
-    void setTailLights(bool light);
-    
-    /**
-     * @brief Initialise the AerialHK. Called from main setup.
-     * 
-     */
-    void setup();
-
-    /**
-     * @brief Toggle landing lights on/off.
-     * 
-     */
-    void toggleLandingLights() {
-      setLandingLights(!isLandingLights());
-    };
-
-    /**
-     * @brief Toggle plasma gun on/off.
-     * 
-     */
-    void togglePlasmaGun() {
-      setPlasmaGun(!isPlasmaGun());
-    };
-
-    /**
-     * @brief Toggle search lights on/off.
-     * 
-     */
-    void toggleSearchLights() {
-      setSearchLights(!isSearchLights());
-    };
-
-    /**
-     * @brief Toggle tail lights on/off.
-     * 
-     */
-    void toggleTailLights() {
-      setTailLights(!isTailLights());
-    };
-
-    /**
-     * @brief Thrust backwards.
-     * 
-     */
-    void thrustBack();
-
-    /**
-     * @brief Thrust forwards.
-     * 
-     */
-    void thrustForward();
-
-    /**
-     * @brief Thrust left. One thruster backwards, the other forwards.
-     * 
-     */
-    void thrustLeft();
-
-    /**
-     * @brief Thrust right. One thruster forwards, the other backwards.
-     * 
-     */
-    void thrustRight();
-
-    /**
-     * @brief Thrust to specific position.
-     * 
-     * @param angle Angle of thrust. Default is to centre.
-     */
-    void thrustTo(int angle);
-    
-    /**
-     * @brief Tilt to specific position.
-     * 
-     * @param degrees Angle of tilt. Default is to centre.
-     */
-    void tiltTo(int angle);
-
-    /**
-     * @brief Absolute Turn.
-     * 
-     * @param degrees Angle of turn. Default is to centre.
-     */
-    void turnTo(int angle);
-
-  private:
-    //
-    // Helpers...
-    //
-
-  private:
-    //
-    // Implementation...
-    //
-
-    /**
-     * @brief The current angle of tilt.
-     * 
-     */
-    int tiltAngle;
-
-    /**
-     * @brief The current angle of turn.
-     * 
-     */
-    int turnAngle;
-
-
-    /**
-     * @brief Indicate if landing lights are on.
-     * 
-     */
-    bool landingLights;
-
-    /**
-     * @brief Indicats whether plasma gun is on (flashing) or off.
-     * 
-     */
-    bool plasmaGun;
-};
-
-/**
- * @brief Single Aerial Hunter Killer.
- * 
- */
-extern AerialHunterKiller AerialHK;
+void thrustBack(); ///< Thrust backwards.
+void thrustHover(); ///< Thrust to hover position.
+void thrustForward(); ///< Thrust forwards.
+void thrustLeft(); ///< Thrust left. One thruster backwards, the other forwards.
+void thrustRight(); ///< Thrust right. One thruster forwards, the other backwards.
 
 #endif /* INCLUDED_AERIALHK_H */
