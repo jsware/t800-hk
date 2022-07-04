@@ -16,7 +16,7 @@ excerpt: >
 # Pegasus Hobbies Future War Aerial HK Machine
 An modification for Pegasus Hobbies Future War Aerial HK Machine. The model is a 1/32 scale model kit. Modified with LEDs in the tail, landing lights, search lights and plasma gun. Added servos to control the VTOL jets and a modified base (built with lego) to control pan and tilt of the model.
 
-{% include video id="6yDIxSZvYxw" provider="youtube" %}
+{% include video id="p5abljBiF7A" provider="youtube" %}
 
 ## Instructions
 
