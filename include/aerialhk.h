@@ -11,7 +11,7 @@
 #define INCLUDED_AERIALHK_H
 
 #define AHK_THRUST_CENTRE 110
-#define AHK_THRUST_SPEED 125
+#define AHK_THRUST_SPEED 50
 #define AHK_THRUST_OFFSET 25
 #define AHK_THRUST_MIN 40
 #define AHK_THRUST_MAX 170
@@ -25,6 +25,7 @@
 #define AHK_TURN_MIN 35
 #define AHK_TURN_MAX 135
 #define AHK_TURN_SPEED 25
+#define AHK_TURN_INTERVAL 2500
 
 void setupAHK(); ///< Setup the AHK. Called by main setup.
 void loopAHK(); ///< Handle the AHK. Called from main loop to run the HK.
@@ -44,7 +45,6 @@ void searchLightsOff(); ///< Search lights off.
 
 bool isPlasmaGun(); ///< Plasma gun firing/not.
 void plasmaGunOn(); ///< Start firing.
-void plasmaGunOn200(); ///< Start firing for 200ms.
 void plasmaGunOff(); ///< Stop firing.
 
 int getTilt();
@@ -56,10 +56,13 @@ int getTurn();
 void turnLeft();
 void turnCentre();
 void turnRight();
+void turnRightRandom();
 
+void thrustMin(); ///< Thrust to minimum setting.
 void thrustBack(); ///< Thrust backwards.
 void thrustHover(); ///< Thrust to hover position.
 void thrustForward(); ///< Thrust forwards.
+void thrustMax(); ///< Thrust to maximum forward.
 void thrustLeft(); ///< Thrust left. One thruster backwards, the other forwards.
 void thrustRight(); ///< Thrust right. One thruster forwards, the other backwards.
 

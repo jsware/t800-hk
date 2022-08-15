@@ -11,12 +11,15 @@
 #include "aerialhk.h"
 #include "ahkctrl.h"
 #include "ahkfx.h"
+#include "pinout.h"
 
 void setup() {
   if(Serial) {
     Serial.begin(115200);
   }
   
+  randomSeed(analogRead(PIN_RANDOMISE));  // Randomise
+
   setupAHK();
   setupAHKCtrl();
   setupAHKEffects();

@@ -149,9 +149,13 @@ void plasmaGunOn200() {
 //
 // Thruster Servos...
 //
-void thrustTo(int thrust) {
+void thrustTo(int thrust, int speed = AHK_THRUST_SPEED) {
   thrustServoL.startEaseTo(thrust);
   thrustServoR.startEaseTo(180-thrust);
+}
+
+void thrustMin() {
+  thrustTo(AHK_THRUST_MIN, AHK_THRUST_SPEED * 3);
 }
 
 void thrustBack() {
@@ -164,6 +168,10 @@ void thrustHover() {
 
 void thrustForward() {
   thrustTo(AHK_THRUST_CENTRE + AHK_THRUST_OFFSET);
+}
+
+void thrustMax() {
+  thrustTo(AHK_THRUST_MAX, AHK_THRUST_SPEED * 3);
 }
 
 void thrustLeft() {
@@ -195,11 +203,11 @@ void tiltTo(int degrees) {
     degrees = AHK_TILT_MAX;
   }
 
-  if(degrees > tiltAngle) {
-    thrustForward();
-  } else if(degrees < tiltAngle) {
-    thrustBack();
-  }
+  // if(degrees > tiltAngle) {
+  //   thrustForward();
+  // } else if(degrees < tiltAngle) {
+  //   thrustBack();
+  // }
 
   tiltServo.startEaseTo(degrees);
   tiltAngle = degrees;
@@ -221,25 +229,33 @@ void tiltBackward() {
 //
 // Turn Servo...
 //
-void turnTo(int degrees) {
+void turnTo(int degrees, int speed = AHK_TURN_SPEED) {
   if(degrees < AHK_TURN_MIN) {
     degrees = AHK_TURN_MIN;
   } else if(degrees > AHK_TURN_MAX) {
     degrees = AHK_TURN_MAX;
   }
 
-  if(degrees > turnAngle) {
-    thrustLeft();
-  } else if(degrees < turnAngle) {
-    thrustRight();
-  }
+  // if(degrees > turnAngle) {
+  //   thrustLeft();
+  // } else if(degrees < turnAngle) {
+  //   thrustRight();
+  // }
 
-  turnServo.startEaseTo(degrees);
+  turnServo.startEaseTo(degrees,speed);
   turnAngle = degrees;
 }
 
 void turnLeft() {
   turnTo(AHK_TURN_MAX);
+}
+
+void turnRightRandom() {
+  if(turnAngle > AHK_TURN_CENTRE - 15) {
+    turnTo(AHK_TURN_MIN + random(15), AHK_TURN_SPEED / 5 * 2);
+  } else {
+    turnTo(AHK_TURN_CENTRE - random(15), AHK_TURN_SPEED / 5 * 2);
+  }
 }
 
 void turnCentre() {

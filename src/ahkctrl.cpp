@@ -33,11 +33,23 @@
 IRsmallDecoder irDecoder(PIN_IR_RECEIVER);
 irSmallD_t irData;
 
+//
+// Cut scene controllers.
+//
+static unsigned long cutSceneTimer = 0;
+static unsigned short cutSceneStep = 0;
+static unsigned short cutSceneControllerId = 0;
+void cutScene01Controller(); ///< Control main cut scene 01.
+
+static unsigned short turnControllerId = 0;
+void startTurnRightRandom();
+void stopTurning();
+
 
 //
 // Timed effects...
 //
-AsyncTimer ATimer(40); ///< Asynchronous Timer.
+AsyncTimer ATimer; ///< Asynchronous Timer.
 
 struct AsyncTiming {
   void (*callback)();
@@ -61,6 +73,8 @@ static const struct AsyncTiming POWER_ON[] PROGMEM = {
 
 const struct AsyncTiming POWER_OFF[] PROGMEM = {
   AT_TIME(0, playLanding),
+  AT_TIME(250, blueLightsOff),
+  AT_TIME(250, redLightsOff),
   AT_TIME(500, tiltLevel),
   AT_TIME(1000, landingLightsOnOff),
   AT_TIME(1500, turnCentre),
@@ -70,29 +84,164 @@ const struct AsyncTiming POWER_OFF[] PROGMEM = {
   END_TIMINGS
 };
 
-const struct AsyncTiming CUT_SCENE_01[] PROGMEM = {
+const struct AsyncTiming CUT_SCENE_01_CTL[] PROGMEM = {
   AT_TIME(0, tailLightsOn),
   AT_TIME(0, playScene01),
+  AT_THEN_EVERY(0,10,cutScene01Controller),
+  END_TIMINGS
+};
+
+const struct AsyncTiming CUT_SCENE_01[] PROGMEM = {
   AT_TIME(2000, landingLightsOnOff),
+  AT_TIME(5500, searchLightsOn),
+
+  AT_TIME(6000, thrustForward),
   AT_TIME(6000, tiltForward),
-  AT_TIME(9200, blueFrontLightsFlash),
-  AT_TIME(9300, redBackLightsFlash),
-  AT_TIME(13000, searchLightsOn),
+  AT_TIME(9232, blueLightsFlashOn),
+  AT_TIME(9332, blueLightsOff),
+  AT_TIME(9300, redLightsFlashOn),
+  AT_TIME(9375, redLightsOff),
+
+  AT_TIME(13000, thrustHover),
   AT_TIME(13000, tiltBackward),
+
+  AT_TIME(14000, thrustRight),
   AT_TIME(14000, turnRight),
-  AT_TIME(16500, blueFrontLightsFlash),
-  AT_TIME(18000, redBackLightsFlash),
+  AT_TIME(16000, thrustHover),
+  AT_TIME(16500, blueLightsFlashOn),
+  AT_TIME(16575, blueLightsOff),
+  AT_TIME(18000, redLightsFlashOn),
+  AT_TIME(18075, redLightsOff),
+  AT_TIME(18575, blueLightsFlashOn),
+  AT_TIME(18650, blueLightsOff),
+  AT_TIME(19250, redLightsFlashOn),
+  AT_TIME(19325, redLightsOff),
+  AT_TIME(19575, blueLightsFlashOn),
+  AT_TIME(19650, blueLightsOff),
+
+  AT_TIME(20000, thrustForward),
   AT_TIME(20000, tiltForward),
-  AT_TIME(22000, plasmaGunOn200),
-  AT_TIME(22000, blueFrontLightsFlash),
-  AT_TIME(22700, blueFrontLightsFlash),
-  AT_TIME(23060, redBackLightsFlash),
+  AT_TIME(21700, blueLightsFlashOn),
+  AT_TIME(21800, blueLightsOff),
+  AT_TIME(22700, redLightsFlashOn),
+  AT_TIME(22775, redLightsOff),
+  AT_TIME(23060, redLightsFlashOn),
+  AT_TIME(23135, redLightsOff),
+
+  AT_TIME(24000, thrustLeft),
   AT_TIME(24000, turnLeft),
+  AT_TIME(26000, thrustForward),
+
+  AT_TIME(28000, thrustHover),
   AT_TIME(28000, tiltLevel),
+
+  AT_TIME(32000, thrustRight),
   AT_TIME(32000, turnRight),
+  AT_TIME(34000, thrustHover),
+
+  AT_TIME(36000, thrustForward),
   AT_TIME(36000, tiltForward),
-  AT_TIME(38600, redBackLightsFlash),
-  AT_TIME(40500, blueFrontLightsFlashOn),
+  AT_TIME(38600, redLightsFlashOn),
+  AT_TIME(38675, redLightsOff),
+
+  AT_TIME(40000, thrustHover),
+  AT_TIME(40000, tiltBackward),
+
+  AT_TIME(40000, startTurnRightRandom),
+  AT_TIME(40500, blueLightsFlashOn),
+  AT_TIME(41470, blueLightsOff),
+  AT_TIME(41900, redLightsFlashOn),
+  AT_TIME(42500, redLightsOff),
+  AT_TIME(42660, blueLightsFlashOn),
+  AT_TIME(43000, blueLightsOff),
+  AT_TIME(44400, blueLightsFlashOn),
+  AT_TIME(44500, redLightsFlashOn),
+  AT_TIME(45500, blueLightsOff),
+  AT_TIME(45700, redLightsOff),
+  AT_TIME(45700, blueLightsFlashOn),
+  AT_TIME(46700, blueLightsOff),
+  AT_TIME(46700, redLightsFlashOn),
+  AT_TIME(48300, redLightsOff),
+  AT_TIME(49000, blueLightsFlashOn),
+  AT_TIME(49000, redLightsOn),
+  AT_TIME(49750, redLightsOff),
+  AT_TIME(50000, blueLightsOff),
+  AT_TIME(50000, redLightsFlashOn),
+  AT_TIME(50700, blueLightsFlashOn),
+  AT_TIME(51300, blueLightsOff),
+  AT_TIME(51700, blueLightsFlashOn),
+  AT_TIME(52600, blueLightsOff),
+  AT_TIME(52600, redLightsOn),
+  AT_TIME(52600, blueLightsOn),
+  AT_TIME(55000, redLightsOff),
+  AT_TIME(55000, blueLightsOff),
+  AT_TIME(63400, blueLightsFlashOn),
+  AT_TIME(63700, blueLightsOff),
+  AT_TIME(63700, redLightsOn),
+  AT_TIME(64500, redLightsOff),
+  AT_TIME(67200, redLightsOn),
+  AT_TIME(68500, blueLightsOn),
+  AT_TIME(69500, redLightsOff),
+  AT_TIME(70000, blueLightsOff),
+  AT_TIME(70000, redLightsFlashOn),
+  AT_TIME(71100, redLightsOn),
+  AT_TIME(71100, blueLightsOn),
+  AT_TIME(72000, redLightsOff),
+  AT_TIME(72000, blueLightsOff),
+  AT_TIME(73000, redLightsFlashOn),
+  AT_TIME(75700, blueLightsFlashOn),
+  AT_TIME(77000, blueLightsOff),
+  AT_TIME(78000, blueLightsFlashOn),
+  AT_TIME(80000, redLightsOff),
+  AT_TIME(80200, blueLightsOff),
+  AT_TIME(80400, redLightsOn),
+  AT_TIME(80400, blueLightsOn),
+  AT_TIME(81800, blueLightsOff),
+  AT_TIME(83700, redLightsOff),
+  AT_TIME(83800, blueLightsFlashOn),
+  AT_TIME(85900, blueLightsOff),
+  AT_TIME(85900, redLightsOn),
+  AT_TIME(87000, stopTurning),
+  AT_TIME(87300, redLightsOff),
+
+  AT_TIME(87300, tiltForward),
+  AT_TIME(87500, thrustMin),
+  AT_TIME(87500, searchLightsOff),
+  AT_TIME(88500, tailLightsOff),
+  AT_TIME(89000, redLightsOn),
+  AT_TIME(89000, blueLightsOn),
+  AT_TIME(91000, redLightsOff),
+  AT_TIME(91500, blueLightsOff),
+
+  AT_TIME(91500, thrustBack),
+  AT_TIME(91500, tiltLevel),
+  AT_TIME(91500, tailLightsOn),
+  AT_TIME(91500, landingLightsOnOff),
+  AT_TIME(93000, turnCentre),
+  AT_TIME(93000, thrustHover),
+  AT_TIME(93500, searchLightsOn),
+
+  AT_TIME(98000, thrustLeft),
+  AT_TIME(98500, turnLeft),
+  AT_TIME(100000, thrustHover),
+  AT_TIME(105000, thrustForward),
+  AT_TIME(105250, tiltForward),
+  AT_TIME(105500, blueLightsOn),
+  AT_TIME(105500, redLightsOn),
+
+  AT_TIME(110250, thrustRight),
+  AT_TIME(110500, turnRight),
+  AT_TIME(115000, thrustForward),
+
+  AT_TIME(120000, blueLightsOff),
+  AT_TIME(120000, redLightsOff),
+  AT_TIME(120500, tiltLevel),
+  AT_TIME(121000, landingLightsOnOff),
+  AT_TIME(121000, stopTurning),
+  AT_TIME(121500, turnCentre),
+  AT_TIME(123500, thrustHover),
+  AT_TIME(124000, searchLightsOff),
+  AT_TIME(130000, tailLightsOff),
   END_TIMINGS
 };
 
@@ -206,6 +355,8 @@ void setTimings(const struct AsyncTiming timings[]) {
   int i = 0;
 
   ATimer.cancelAll();
+  cutSceneStep = 0;
+  cutSceneTimer = millis();
 
   do {
     memcpy_P(&t, &timings[i], sizeof(t));
@@ -214,7 +365,7 @@ void setTimings(const struct AsyncTiming timings[]) {
       ATimer.setTimeout(t.callback, t.start);
 
       if(t.repeat) {
-        ATimer.delay(ATimer.setInterval(t.callback,t.repeat),t.start);
+        ATimer.delay(cutSceneControllerId = ATimer.setInterval(t.callback,t.repeat),t.start);
       }
     }
     ++i;
@@ -224,8 +375,8 @@ void setTimings(const struct AsyncTiming timings[]) {
 
 void resetAHKCtrl() {
   stopPlaying();
-  blueFrontLightsOff();
-  redBackLightsOff();
+  blueLightsOff();
+  redLightsOff();
 
   tiltLevel();
   turnCentre();
@@ -278,24 +429,29 @@ void loopAHKCtrl() {
       break;
 
     case CTL_REWND: // Rewind == turn left.
+      thrustLeft();
       turnLeft();
-      // AerialHK.turnTo(AerialHunterKiller::TURN_MAX);
       break;
 
     case CTL_FASTF: // Fast forward == turn right.
+      thrustRight();
       turnRight();
-      // AerialHK.turnTo(AerialHunterKiller::TURN_MIN);
       break;
 
     case CTL_MOVDN: // Move down == tilt forward.
       if(getTilt() < AHK_TILT_CENTRE) {
+        thrustForward();
         tiltLevel();
-      } else {
+      } else if (getTilt() < AHK_TILT_MAX) {
+        thrustForward();
         tiltForward();
+      } else {
+        thrustMax();
       }
       break;
 
     case CTL_MOVUP: // Move up == tilt backwards.
+      thrustBack();
       if(getTilt() > AHK_TILT_CENTRE) {
         tiltLevel();
       } else {
@@ -333,7 +489,38 @@ void loopAHKCtrl() {
 
     case '1': // 1 to play cut scene 01.
       resetAHKCtrl();
-      setTimings(CUT_SCENE_01);
+      setTimings(CUT_SCENE_01_CTL);
       break;
+  }
+}
+
+
+void cutScene01Controller() {
+  unsigned long now = millis() - cutSceneTimer;
+  struct AsyncTiming t;
+
+  do {
+    memcpy_P(&t, &CUT_SCENE_01[cutSceneStep], sizeof(t));
+
+    if(t.callback) {
+      if(now >= t.start) {
+        t.callback();
+        cutSceneStep++;
+      }
+    } else {
+      ATimer.cancel(cutSceneControllerId);
+    }
+  } while(t.callback && now >= t.start);
+}
+
+void startTurnRightRandom() {
+  stopTurning();
+  turnControllerId = ATimer.setInterval(turnRightRandom, AHK_TURN_INTERVAL);
+}
+
+void stopTurning() {
+  if(turnControllerId) {
+    ATimer.cancel(turnControllerId);
+    turnControllerId = 0;
   }
 }

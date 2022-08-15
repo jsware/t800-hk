@@ -13,16 +13,13 @@
 void setupAHKEffects();
 void loopAHKEffects();
 
-bool isBlueFrontLights();
-void blueFrontLightsOn();
-void blueFrontLightsOff();
-void blueFrontLightsFlash();
-void blueFrontLightsFlashOn();
+void blueLightsOn();
+void blueLightsFlashOn();
+void blueLightsOff();
 
-bool isRedBackLights();
-void redBackLightsOn();
-void redBackLightsOff();
-void redBackLightsFlash();
+void redLightsOn();
+void redLightsFlashOn();
+void redLightsOff();
 
 void volumeUp();
 void volumeCentre();

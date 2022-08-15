@@ -11,14 +11,15 @@
 #include <jled.h>
 #include <SoftwareSerial.h>
 #include "ahkfx.h"
+#include "aerialhk.h"
 #include "pinout.h"
 
 
 //
 // Base LEDs...
 //
-auto blueFrontLed = JLed(PIN_BLUE_FRONT).Off();
-auto redBackLed = JLed(PIN_RED_BACK).Off();
+auto blueLed = JLed(PIN_BLUE_FRONT).Off();
+auto redLed = JLed(PIN_RED_BACK).Off();
 
 
 //
@@ -41,7 +42,6 @@ static int volume = VOL_CENTRE;
 
 // Serial port to DFPlayer Pro.
 SoftwareSerial DFSerial(PIN_SOUND_RX, PIN_SOUND_TX);  //RX  TX
-
 
 static void readAck() {
   char str[81];
@@ -68,8 +68,7 @@ static void readAck() {
 }
 
 
-void setupAHKEffects()
-{
+void setupAHKEffects() {
   DFSerial.begin(115200);
 
   DFSerial.print(SND_PLAYMODE); readAck();
@@ -77,59 +76,53 @@ void setupAHKEffects()
   volumeCentre();
 
   pinMode(PIN_BLUE_FRONT, OUTPUT);
-  blueFrontLightsOff();
+  blueLightsOff();
 
   pinMode(PIN_RED_BACK, OUTPUT);
-  redBackLightsOff();
+  redLightsOff();
 }
 
 
-void loopAHKEffects()
-{
-  blueFrontLed.Update();
-  redBackLed.Update();
+void loopAHKEffects() {
+  blueLed.Update();
+  redLed.Update();
 }
 
 
-bool isBlueFrontLights()
-{
-  return digitalRead(PIN_BLUE_FRONT);
+//
+// Blue/Red LEDs...
+//
+
+void blueLightsOn() {
+  blueLed.Reset().On().Forever().Update();
 }
 
-void blueFrontLightsOn()
-{
-  blueFrontLed.On().Forever().Reset();
+void blueLightsFlashOn() {
+  blueLed.Reset().Blink(50,50).Forever().Update();
+  plasmaGunOn();
 }
 
-void blueFrontLightsOff()
-{
-  blueFrontLed.Off().Forever().Reset();
+void blueLightsOff() {
+  blueLed.Reset().Off().Forever().Update();
+  plasmaGunOff();
 }
 
-void blueFrontLightsFlash() {
-  blueFrontLed.Reset().Blink(200,50).Repeat(1).Update();  
+void redLightsOn() {
+  redLed.Reset().On().Forever().Update();
 }
 
-bool isRedBackLights()
-{
-  return digitalRead(PIN_RED_BACK);
+void redLightsFlashOn() {
+  redLed.Reset().Blink(50,50).Forever().Update();
 }
 
-void redBackLightsOn()
-{
-  redBackLed.Reset().On().Forever().Update();
-}
-
-void redBackLightsOff()
-{
-  redBackLed.Reset().Off().Forever().Update();
-}
-
-void redBackLightsFlash() {
-  redBackLed.Reset().Blink(200,50).Repeat(1).Update();  
+void redLightsOff() {
+  redLed.Reset().Off().Forever().Update();
 }
 
 
+//
+// Sound Effects
+//
 
 static void setVolume(int level) {
   if(level < VOL_MIN) {
@@ -147,7 +140,7 @@ static void setVolume(int level) {
 }
 
 void volumeUp() {
-  setVolume(volume + 5);
+  setVolume(volume + 1);
 }
 
 void volumeCentre() {
@@ -155,7 +148,7 @@ void volumeCentre() {
 }
 
 void volumeDown() {
-  setVolume(volume - 5);
+  setVolume(volume - 1);
 }
 
 void stopPlaying() {
@@ -175,5 +168,6 @@ void playFlyMore() {
 }
 
 void playScene01() {
+  Serial.print(SND_SCENE_01);
   DFSerial.print(SND_SCENE_01); readAck();
 }

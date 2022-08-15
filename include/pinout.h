@@ -27,5 +27,6 @@
 
 #define PIN_BLUE_FRONT 14
 #define PIN_RED_BACK 15
+#define PIN_RANDOMISE 16
 
 #endif /* INCLUDED_PINOUT_H */
