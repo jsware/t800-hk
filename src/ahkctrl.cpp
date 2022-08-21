@@ -173,14 +173,21 @@ const struct AsyncTiming CUT_SCENE_01[] PROGMEM = {
   AT_TIME(52600, blueLightsOff),
   AT_TIME(52600, redLightsOn),
   AT_TIME(52600, blueLightsOn),
+  AT_TIME(53000, stopTurning),
   AT_TIME(55000, redLightsOff),
   AT_TIME(55000, blueLightsOff),
+  AT_TIME(56000, thrustForward),
+  AT_TIME(56000, tiltForward),
+
+  AT_TIME(60000, thrustHover),
+  AT_TIME(60000, tiltBackward),
   AT_TIME(63400, blueLightsFlashOn),
   AT_TIME(63700, blueLightsOff),
   AT_TIME(63700, redLightsOn),
   AT_TIME(64500, redLightsOff),
   AT_TIME(67200, redLightsOn),
   AT_TIME(68500, blueLightsOn),
+  AT_TIME(69000, startTurnRightRandom),
   AT_TIME(69500, redLightsOff),
   AT_TIME(70000, blueLightsOff),
   AT_TIME(70000, redLightsFlashOn),
@@ -205,6 +212,7 @@ const struct AsyncTiming CUT_SCENE_01[] PROGMEM = {
   AT_TIME(87300, redLightsOff),
 
   AT_TIME(87300, tiltForward),
+  AT_TIME(87400, turnLeft),
   AT_TIME(87500, thrustMin),
   AT_TIME(87500, searchLightsOff),
   AT_TIME(88500, tailLightsOff),
@@ -221,24 +229,40 @@ const struct AsyncTiming CUT_SCENE_01[] PROGMEM = {
   AT_TIME(93000, thrustHover),
   AT_TIME(93500, searchLightsOn),
 
-  AT_TIME(98000, thrustLeft),
-  AT_TIME(98500, turnLeft),
-  AT_TIME(100000, thrustHover),
-  AT_TIME(105000, thrustForward),
-  AT_TIME(105250, tiltForward),
-  AT_TIME(105500, blueLightsOn),
-  AT_TIME(105500, redLightsOn),
+  AT_TIME(95000, thrustLeft),
+  AT_TIME(95500, turnLeft),
+  AT_TIME(97000, thrustHover),
+  AT_TIME(99000, thrustForward),
+  AT_TIME(99250, tiltForward),
+  AT_TIME(100000, blueLightsOn),
+  AT_TIME(100000, redLightsOn),
 
-  AT_TIME(110250, thrustRight),
-  AT_TIME(110500, turnRight),
-  AT_TIME(115000, thrustForward),
+  AT_TIME(102000, thrustRight),
+  AT_TIME(102000, turnRight),
+  AT_TIME(104500, thrustForward),
 
-  AT_TIME(120000, blueLightsOff),
-  AT_TIME(120000, redLightsOff),
-  AT_TIME(120500, tiltLevel),
-  AT_TIME(121000, landingLightsOnOff),
-  AT_TIME(121000, stopTurning),
-  AT_TIME(121500, turnCentre),
+  AT_TIME(106000, thrustLeft),
+  AT_TIME(106000, turnLeft),
+  AT_TIME(108500, thrustForward),
+
+  AT_TIME(110000, thrustRight),
+  AT_TIME(110000, turnRight),
+  AT_TIME(112500, thrustForward),
+
+  AT_TIME(114000, thrustLeft),
+  AT_TIME(114000, turnLeft),
+  AT_TIME(116500, thrustForward),
+
+  AT_TIME(118000, thrustRight),
+  AT_TIME(118000, turnRight),
+  AT_TIME(120500, thrustForward),
+
+  AT_TIME(121000, blueLightsOff),
+  AT_TIME(121000, redLightsOff),
+  AT_TIME(121500, tiltLevel),
+  AT_TIME(121500, landingLightsOnOff),
+  AT_TIME(122000, stopTurning),
+  AT_TIME(122500, turnCentre),
   AT_TIME(123500, thrustHover),
   AT_TIME(124000, searchLightsOff),
   AT_TIME(130000, tailLightsOff),
@@ -339,7 +363,7 @@ static char translateIR(long value) {
       break;
 
     default:
-      Serial.print(F("IR? "));
+      Serial.print(F("IR Code Error: "));
       Serial.println(value, HEX);
   }
 
@@ -390,7 +414,7 @@ void resetAHKCtrl() {
 
 
 void setupAHKCtrl() {
-  // NOP
+  Serial.println(F("AHK Controller Online"));
 }
 
 
@@ -408,8 +432,10 @@ void loopAHKCtrl() {
   switch(cmd) {
     case CTL_POWER: // Power on/off sequences.
       if(!isTailLights()) {
+        Serial.println(F("Power on"));
         setTimings(POWER_ON);
       } else {
+        Serial.println(F("Power off"));
         setTimings(POWER_OFF);
       }
       break;
@@ -423,29 +449,36 @@ void loopAHKCtrl() {
       break;
 
     case CTL_PLAYP: // Play/Pause == centre model.
+      Serial.println(F("Levelling off"));
+
       tiltLevel();
       turnCentre();
       thrustHover();
       break;
 
     case CTL_REWND: // Rewind == turn left.
+      Serial.println(F("Bank left"));
       thrustLeft();
       turnLeft();
       break;
 
     case CTL_FASTF: // Fast forward == turn right.
+      Serial.println(F("Bank left"));
       thrustRight();
       turnRight();
       break;
 
     case CTL_MOVDN: // Move down == tilt forward.
       if(getTilt() < AHK_TILT_CENTRE) {
+        Serial.println(F("Hover"));
         thrustForward();
         tiltLevel();
       } else if (getTilt() < AHK_TILT_MAX) {
+        Serial.println(F("Fly forward"));
         thrustForward();
         tiltForward();
       } else {
+        Serial.println(F("Pursuite Mode"));
         thrustMax();
       }
       break;
@@ -453,6 +486,7 @@ void loopAHKCtrl() {
     case CTL_MOVUP: // Move up == tilt backwards.
       thrustBack();
       if(getTilt() > AHK_TILT_CENTRE) {
+        Serial.println(F("Hover"));
         tiltLevel();
       } else {
         tiltBackward();
@@ -461,24 +495,30 @@ void loopAHKCtrl() {
 
     case CTL_FNSTP: // Function/stop == landinglights on/off.
       if(isLandingLights()) {
+        Serial.println(F("Landing lights deactivate"));
         landingLightsOff();
       } else {
+        Serial.println(F("Landing lights activate"));
         landingLightsOn();
       }
       break;
 
     case CTL_EQUAL: // Equal (EQ) == Plasma gun on/off.
       if(isPlasmaGun()) {
+        Serial.println(F("Cease fire"));
         plasmaGunOff();
       } else {
+        Serial.println(F("Commence firing"));
         plasmaGunOn();
       }
       break;
 
     case CTL_STRPT: // ST/RPT == Search lights on/off.
       if(isSearchLights()) {
+        Serial.println(F("Suspend search mode"));
         searchLightsOff();
       } else {
+        Serial.println(F("Search mode activated"));
         searchLightsOn();
       }
       break;
@@ -488,6 +528,7 @@ void loopAHKCtrl() {
       break;
 
     case '1': // 1 to play cut scene 01.
+      Serial.println(F("Program 01: Search and destroy"));
       resetAHKCtrl();
       setTimings(CUT_SCENE_01_CTL);
       break;

@@ -21,11 +21,11 @@
 #define AHK_TILT_MAX 180
 #define AHK_TILT_SPEED 50
 
-#define AHK_TURN_CENTRE 85
+#define AHK_TURN_CENTRE 90
 #define AHK_TURN_MIN 35
 #define AHK_TURN_MAX 135
 #define AHK_TURN_SPEED 25
-#define AHK_TURN_INTERVAL 2500
+#define AHK_TURN_INTERVAL 1250
 
 void setupAHK(); ///< Setup the AHK. Called by main setup.
 void loopAHK(); ///< Handle the AHK. Called from main loop to run the HK.

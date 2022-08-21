@@ -62,7 +62,7 @@ static void readAck() {
 
   str[i]='\0';
   if(strcmp(str, "OK")) {
-    Serial.print("FX? ");
+    Serial.print("SFX Receive Error: ");
     Serial.println(str);
   }
 }
@@ -80,6 +80,8 @@ void setupAHKEffects() {
 
   pinMode(PIN_RED_BACK, OUTPUT);
   redLightsOff();
+
+  Serial.println(F("AHK Effects Online"));
 }
 
 
@@ -168,6 +170,5 @@ void playFlyMore() {
 }
 
 void playScene01() {
-  Serial.print(SND_SCENE_01);
   DFSerial.print(SND_SCENE_01); readAck();
 }

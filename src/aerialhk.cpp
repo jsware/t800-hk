@@ -57,6 +57,8 @@ void setupAHK() {
 
   tiltServo.attach(PIN_TILT_SERVO, tiltAngle);
   tiltServo.setSpeed(AHK_TILT_SPEED);
+
+  Serial.println(F("Aerial HK Online"));
 }
 
 
@@ -203,12 +205,6 @@ void tiltTo(int degrees) {
     degrees = AHK_TILT_MAX;
   }
 
-  // if(degrees > tiltAngle) {
-  //   thrustForward();
-  // } else if(degrees < tiltAngle) {
-  //   thrustBack();
-  // }
-
   tiltServo.startEaseTo(degrees);
   tiltAngle = degrees;
 }
@@ -236,12 +232,6 @@ void turnTo(int degrees, int speed = AHK_TURN_SPEED) {
     degrees = AHK_TURN_MAX;
   }
 
-  // if(degrees > turnAngle) {
-  //   thrustLeft();
-  // } else if(degrees < turnAngle) {
-  //   thrustRight();
-  // }
-
   turnServo.startEaseTo(degrees,speed);
   turnAngle = degrees;
 }
@@ -252,9 +242,9 @@ void turnLeft() {
 
 void turnRightRandom() {
   if(turnAngle > AHK_TURN_CENTRE - 15) {
-    turnTo(AHK_TURN_MIN + random(15), AHK_TURN_SPEED / 5 * 2);
+    turnTo(AHK_TURN_MIN + random(15), AHK_TURN_SPEED);
   } else {
-    turnTo(AHK_TURN_CENTRE - random(15), AHK_TURN_SPEED / 5 * 2);
+    turnTo(AHK_TURN_CENTRE - random(15), AHK_TURN_SPEED);
   }
 }
 
